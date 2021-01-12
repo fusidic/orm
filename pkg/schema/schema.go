@@ -48,6 +48,7 @@ func Parse(object interface{}, d dialect.Dialect) *Schema {
 	// 获取实例的字段的个数
 	for i := 0; i < modelType.NumField(); i++ {
 		p := modelType.Field(i)
+		// 依次将 Object 中的元素转化为 sqlite 中对应的字段
 		if !p.Anonymous && ast.IsExported(p.Name) {
 			field := &Field{
 				Name: p.Name,

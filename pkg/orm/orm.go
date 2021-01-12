@@ -3,13 +3,15 @@ package orm
 import (
 	"database/sql"
 
+	"github.com/fusidic/orm/pkg/dialect"
 	"github.com/fusidic/orm/pkg/log"
 	"github.com/fusidic/orm/pkg/session"
 )
 
 // Engine is the entrance of user
 type Engine struct {
-	db *sql.DB
+	db      *sql.DB
+	dialect dialect.Dialect
 }
 
 // NewEngine return a Engine
@@ -24,7 +26,13 @@ func NewEngine(driver, source string) (e *Engine, err error) {
 		log.Error(err)
 		return nil, err
 	}
-	e = &Engine{db: db}
+	// make sure the specific dialect exists
+	dial, ok := dialect.GetDialect(driver)
+	if !ok {
+		log.Errorf("dialect %s Not Found", driver)
+		return
+	}
+	e = &Engine{db: db, dialect: dial}
 	log.Info("Connect datavase success")
 	return e, nil
 }
@@ -39,5 +47,5 @@ func (e *Engine) Close() {
 
 // NewSession encapsule session.New, returns a session.
 func (e *Engine) NewSession() *session.Session {
-	return session.New(e.db)
+	return session.New(e.db, e.dialect)
 }
