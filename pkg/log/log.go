@@ -18,8 +18,10 @@ var (
 var (
 	Error  = errorLog.Println
 	Errorf = errorLog.Printf
-	Info   = infoLog.Println
-	Infof  = infoLog.Printf
+	// Info print info log by line.
+	Info = infoLog.Println
+	// Infof print info log with format.
+	Infof = infoLog.Printf
 )
 
 // log levels
