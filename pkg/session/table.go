@@ -18,7 +18,7 @@ func (s *Session) Model(value interface{}) *Session {
 	return s
 }
 
-// GetRefTable ...
+// GetRefTable returns a Schema instance that contains all parsed fields.
 func (s *Session) GetRefTable() *schema.Schema {
 	if s.refTable == nil {
 		log.Error("Model is not set")
@@ -26,7 +26,7 @@ func (s *Session) GetRefTable() *schema.Schema {
 	return s.refTable
 }
 
-// CreateTable create a table in database
+// CreateTable create a table in database with model.
 func (s *Session) CreateTable() error {
 	table := s.GetRefTable()
 	var columns []string

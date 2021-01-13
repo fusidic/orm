@@ -64,3 +64,14 @@ func Parse(object interface{}, d dialect.Dialect) *Schema {
 	}
 	return schema
 }
+
+// RecordValues returns the values of object's member variables.
+// 将目标对象的成员变量平铺，如：将 &User{Name: "Tom", Age: 18} 转换为 ("Tom": 18)
+func (schema *Schema) RecordValues(object interface{}) []interface{} {
+	objectValue := reflect.Indirect(reflect.ValueOf(object))
+	var fieldValues []interface{}
+	for _, field := range schema.Fields {
+		fieldValues = append(fieldValues, objectValue.FieldByName(field.Name).Interface())
+	}
+	return fieldValues
+}
