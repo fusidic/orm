@@ -11,6 +11,8 @@ import (
 func (s *Session) Insert(values ...interface{}) (int64, error) {
 	recordValues := make([]interface{}, 0)
 	for _, value := range values {
+		// hook
+		s.CallMethod(BeforeInsert, value)
 		table := s.Model(value).GetRefTable()
 		s.clause.Set(clause.INSERT, table.Name, table.FieldNames)
 		// 将对象 value 转换，并添加到 VALUES 中
@@ -23,12 +25,14 @@ func (s *Session) Insert(values ...interface{}) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-
+	s.CallMethod(AfterInsert, nil)
 	return result.RowsAffected()
 }
 
 // Find gets all eligible records and put them into objects.
 func (s *Session) Find(values interface{}) error {
+	// hook
+	s.CallMethod(BeforeQuery, nil)
 	// destSlice.Type().Elem() 获取切片的单个元素的类型 destType，
 	// 使用 reflect.New() 方法创建一个 destType 的实例，作为 Model() 的入参，
 	// 映射出表结构 RefTable()
@@ -55,6 +59,7 @@ func (s *Session) Find(values interface{}) error {
 		if err := rows.Scan(value...); err != nil {
 			return err
 		}
+		s.CallMethod(AfterQuery, dest.Addr().Interface())
 		destSlice.Set(reflect.Append(destSlice, dest))
 	}
 	return rows.Close()
@@ -82,12 +87,14 @@ func (s *Session) Update(kv ...interface{}) (int64, error) {
 
 // Delete records with where clause
 func (s *Session) Delete() (int64, error) {
+	s.CallMethod(BeforeDelete, nil)
 	s.clause.Set(clause.DELETE, s.GetRefTable().Name)
 	sql, vars := s.clause.Build(clause.DELETE, clause.WHERE)
 	result, err := s.Raw(sql, vars...).Exec()
 	if err != nil {
 		return 0, err
 	}
+	s.CallMethod(AfterDelete, nil)
 	return result.RowsAffected()
 }
 
