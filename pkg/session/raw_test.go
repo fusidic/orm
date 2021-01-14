@@ -15,7 +15,7 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	TestDB, _ = sql.Open("sqlite3", "../orm.db")
+	TestDB, _ = sql.Open("sqlite3", "../../orm.db")
 	code := m.Run()
 	_ = TestDB.Close()
 	os.Exit(code)

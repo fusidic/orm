@@ -19,10 +19,14 @@ const (
 	LIMIT
 	WHERE
 	ORDERBY
+	UPDATE
+	DELETE
+	COUNT
 )
 
 // Set adds a sub clause of specific type.
 // Set 根据 Type 调用对应的 generator，并声称该子句对应的 SQL 语句
+// Set 的构建是将 SQL 语句与变量分离的，即 WHERE User = ? , Tom
 func (c *Clause) Set(name Type, vars ...interface{}) {
 	if c.sql == nil {
 		c.sql = make(map[Type]string)
