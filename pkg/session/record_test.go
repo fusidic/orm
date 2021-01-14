@@ -35,3 +35,30 @@ func TestSession_Find(t *testing.T) {
 		t.Fatal("failed to query all")
 	}
 }
+
+func TestSession_Limit(t *testing.T) {
+	s := testRecordInit(t)
+	affected, err := s.Where("Name = ?", "Tom").Update("Age", 30)
+	if err != nil {
+		t.Fatal("failed to update")
+	}
+	u := &User{}
+	_ = s.OrderBy("Age DESC").First(u)
+
+	if affected != 1 || u.Age != 30 {
+		t.Fatal("failed to update")
+	}
+}
+
+func TestSession_DeleteAndCount(t *testing.T) {
+	s := testRecordInit(t)
+	affected, _ := s.Where("Name = ?", "Tom").Delete()
+	count, _ := s.Count()
+
+	if affected != 1 {
+		t.Fatal("failed to delete")
+	}
+	if count != 1 {
+		t.Fatal("failed to count")
+	}
+}
