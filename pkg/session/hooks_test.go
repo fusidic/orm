@@ -7,7 +7,7 @@ import (
 )
 
 type Account struct {
-	ID       int `orm:"PRIMARY KEY`
+	ID       int `orm:"PRIMARY KEY"`
 	Password string
 }
 
