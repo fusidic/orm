@@ -56,8 +56,8 @@ func (e *Engine) NewSession() *session.Session {
 type TxFunc func(*session.Session) (interface{}, error)
 
 // Transaction executes sql wrapped in a transaction, then automatically commit if no error occurs
-func (engine *Engine) Transaction(f TxFunc) (result interface{}, err error) {
-	s := engine.NewSession()
+func (e *Engine) Transaction(f TxFunc) (result interface{}, err error) {
+	s := e.NewSession()
 	if err := s.Begin(); err != nil {
 		return nil, err
 	}
@@ -66,8 +66,15 @@ func (engine *Engine) Transaction(f TxFunc) (result interface{}, err error) {
 			_ = s.Rollback()
 			panic(p) // re-throw panic after Rollback
 		} else if err != nil {
-			_ = s.Rollback() // err is non-nil; don't change it
+			rollbackErr := s.Rollback() // err is non-nil; don't change it
+			log.Info(rollbackErr)
 		} else {
+			defer func() {
+				if err != nil {
+					rollbackErr := s.Rollback()
+					log.Info(rollbackErr)
+				}
+			}()
 			err = s.Commit() // err is nil; if Commit returns error update err
 		}
 	}()
