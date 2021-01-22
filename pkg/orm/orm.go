@@ -33,7 +33,7 @@ func NewEngine(driver, source string) (e *Engine, err error) {
 		return
 	}
 	e = &Engine{db: db, dialect: dial}
-	log.Info("Connect datavase success")
+	log.Info("Connect database success")
 	return e, nil
 }
 
@@ -56,8 +56,8 @@ func (e *Engine) NewSession() *session.Session {
 type TxFunc func(*session.Session) (interface{}, error)
 
 // Transaction executes sql wrapped in a transaction, then automatically commit if no error occurs
-func (e *Engine) Transaction(f TxFunc) (result interface{}, err error) {
-	s := e.NewSession()
+func (engine *Engine) Transaction(f TxFunc) (result interface{}, err error) {
+	s := engine.NewSession()
 	if err := s.Begin(); err != nil {
 		return nil, err
 	}
@@ -66,10 +66,11 @@ func (e *Engine) Transaction(f TxFunc) (result interface{}, err error) {
 			_ = s.Rollback()
 			panic(p) // re-throw panic after Rollback
 		} else if err != nil {
-			_ = s.Rollback()
+			_ = s.Rollback() // err is non-nil; don't change it
 		} else {
-			err = s.Commit()
+			err = s.Commit() // err is nil; if Commit returns error update err
 		}
 	}()
+
 	return f(s)
 }
