@@ -78,6 +78,5 @@ func (e *Engine) Transaction(f TxFunc) (result interface{}, err error) {
 			err = s.Commit() // err is nil; if Commit returns error update err
 		}
 	}()
-
 	return f(s)
 }

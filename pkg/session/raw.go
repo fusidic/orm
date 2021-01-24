@@ -14,7 +14,7 @@ import (
 type Session struct {
 	db       *sql.DB
 	dialect  dialect.Dialect
-	tx       *sql.Tx // in database transaction
+	tx       *sql.Tx
 	refTable *schema.Schema
 	clause   clause.Clause
 	sql      strings.Builder
@@ -29,6 +29,13 @@ func New(db *sql.DB, dialect dialect.Dialect) *Session {
 	}
 }
 
+// Clear reset sql Vars
+func (s *Session) Clear() {
+	s.sql.Reset()
+	s.sqlVars = nil
+	s.clause = clause.Clause{}
+}
+
 // CommonDB is a minimal function set of db
 type CommonDB interface {
 	Query(query string, args ...interface{}) (*sql.Rows, error)
@@ -39,15 +46,11 @@ type CommonDB interface {
 var _ CommonDB = (*sql.DB)(nil)
 var _ CommonDB = (*sql.Tx)(nil)
 
-// Clear reset sql Vars
-func (s *Session) Clear() {
-	s.sql.Reset()
-	s.sqlVars = nil
-	s.clause = clause.Clause{}
-}
-
-// DB returns *sql.DB
-func (s *Session) DB() *sql.DB {
+// DB returns tx if a tx begins, otherwise return *sql.DB
+func (s *Session) DB() CommonDB {
+	if s.tx != nil {
+		return s.tx
+	}
 	return s.db
 }
 
@@ -63,7 +66,8 @@ func (s *Session) Raw(sql string, values ...interface{}) *Session {
 func (s *Session) Exec() (result sql.Result, err error) {
 	defer s.Clear()
 	log.Info(s.sql.String(), s.sqlVars)
-	if result, err = s.db.Exec(s.sql.String(), s.sqlVars...); err != nil {
+	// Watch out it call DB() here.
+	if result, err = s.DB().Exec(s.sql.String(), s.sqlVars...); err != nil {
 		log.Error(err)
 	}
 	return

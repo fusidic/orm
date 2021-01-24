@@ -17,6 +17,11 @@ func OpenDB(t *testing.T) *Engine {
 	return engine
 }
 
+func Test_NewEngine(t *testing.T) {
+	engine := OpenDB(t)
+	defer engine.Close()
+}
+
 type User struct {
 	Name string `orm:"PRIMARY KEY"`
 	Age  int
